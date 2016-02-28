@@ -73,6 +73,9 @@ class plot_imu_data(object):
             self.data["time_mag"] = [x.to_sec() for x in self.data["time_mag"]]
             self.data["time_imu"] = [x.to_sec() for x in self.data["time_imu"]]
         self.mag_min_max_dict = self.calc_min_max("mag")
+        np_array = np.array([self.data["mag"][0], self.data["mag"][1], self.data["mag"][2]])
+        # np*np element wise mul sum(axis=0) sum all squared components
+        self.data["mag_magnitude"] = np.sqrt((np_array*np_array).sum(axis=0))
 
     def calc_min_max(self, data_dict_entry):
         min_max_dict = {"min_x": min(self.data[data_dict_entry][0]), "max_x": max(self.data[data_dict_entry][0]),
@@ -98,118 +101,129 @@ class plot_imu_data(object):
         return fig  # return figure handle
 
     def plot_rpy(self):
-        axis_names = ["roll", "pitch", "yaw"]
-        self.plot_imu(self.data["time_imu"], self.data["orient_rpy"], axis_names)
+        if self.check_data_availability("orient_rpy"):
+            axis_names = ["roll", "pitch", "yaw"]
+            self.plot_imu(self.data["time_imu"], self.data["orient_rpy"], axis_names)
 
     def plot_acc(self):
-        axis_names = ["acc_x", "acc_y", "acc_z"]
-        self.plot_imu(self.data["time_imu"], self.data["acc"], axis_names)
+        if self.check_data_availability("acc"):
+            axis_names = ["acc_x", "acc_y", "acc_z"]
+            self.plot_imu(self.data["time_imu"], self.data["acc"], axis_names)
 
     def plot_gyro(self):
-        axis_names = ["gyro_x", "gyro_y", "gyro_z"]
-        self.plot_imu(self.data["time_imu"], self.data["gyro"], axis_names)
+        if self.check_data_availability("gyro"):
+            axis_names = ["gyro_x", "gyro_y", "gyro_z"]
+            self.plot_imu(self.data["time_imu"], self.data["gyro"], axis_names)
 
     def plot_mag(self):
-        axis_names = ["mag_x", "mag_y", "mag_z"]
-        self.plot_imu(self.data["time_mag"], self.data["mag"], axis_names)
+       if self.check_data_availability("mag"):
+            axis_names = ["mag_x", "mag_y", "mag_z"]
+            self.plot_imu(self.data["time_mag"], self.data["mag"], axis_names)
 
     def plot_mag_circles(self):
-        axis_names = ["normal to X", "normal to Y", "normal to Z"]
-        fig = plt.figure()
-        plot_1 = fig.add_subplot(311)
-        plot_1.plot(self.data["mag"][1], self.data["mag"][2])
-        plot_1.set_xlabel(axis_names[0])
-        plot_1.axis("equal")
 
-        plot_2 = fig.add_subplot(312)
-        plot_2.plot(self.data["mag"][0], self.data["mag"][2])
-        plot_2.set_xlabel(axis_names[1])
-        plot_2.axis("equal")
+        if self.check_data_availability("mag"):
+            axis_names = ["normal to X", "normal to Y", "normal to Z", "magnitude_mag_all_axis"]
+            fig = plt.figure()
+            plot_1 = fig.add_subplot(411)
+            plot_1.plot(self.data["mag"][1], self.data["mag"][2])
+            plot_1.set_xlabel(axis_names[0])
+            plot_1.axis("equal")
 
-        plot_3 = fig.add_subplot(313)
-        plot_3.plot(self.data["mag"][0], self.data["mag"][1])
-        plot_3.set_xlabel(axis_names[2])
-        plot_3.axis("equal")
+            plot_2 = fig.add_subplot(412)
+            plot_2.plot(self.data["mag"][0], self.data["mag"][2])
+            plot_2.set_xlabel(axis_names[1])
+            plot_2.axis("equal")
 
-        fig.tight_layout()
-        fig.show()
+            plot_3 = fig.add_subplot(413)
+            plot_3.plot(self.data["mag"][0], self.data["mag"][1])
+            plot_3.set_xlabel(axis_names[2])
+            plot_3.axis("equal")
+
+            plot_4 = fig.add_subplot(414)
+            plot_4.plot(self.data["time_mag"], self.data["mag_magnitude"]/(max(self.data["mag_magnitude"])))
+            plot_4.set_xlabel(axis_names[3])
+
+            fig.tight_layout()
+            fig.show()
 
     def plot_mag_scatter_raw(self, downsampling_step=10):
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        x_downsampled = self.downsample(self.data["mag"][0], downsampling_step)
-        y_downsampled = self.downsample(self.data["mag"][1], downsampling_step)
-        z_downsampled = self.downsample(self.data["mag"][2], downsampling_step)
-        # using complete data set for min max
-        ranges = [self.mag_min_max_dict["max_x"]-self.mag_min_max_dict["min_x"],
-                  self.mag_min_max_dict["max_y"]-self.mag_min_max_dict["min_y"],
-                  self.mag_min_max_dict["max_z"]-self.mag_min_max_dict["min_z"]]
-        ax.scatter(x_downsampled, y_downsampled, z_downsampled, c="b", marker="o")
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-        axis_range_max = max([self.mag_min_max_dict["max_x"],
-                              self.mag_min_max_dict["max_y"],
-                              self.mag_min_max_dict["max_z"]])
+        if self.check_data_availability("mag"):
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            x_downsampled = self.downsample(self.data["mag"][0], downsampling_step)
+            y_downsampled = self.downsample(self.data["mag"][1], downsampling_step)
+            z_downsampled = self.downsample(self.data["mag"][2], downsampling_step)
+            # using complete data set for min max
+            ranges = [self.mag_min_max_dict["max_x"]-self.mag_min_max_dict["min_x"],
+                      self.mag_min_max_dict["max_y"]-self.mag_min_max_dict["min_y"],
+                      self.mag_min_max_dict["max_z"]-self.mag_min_max_dict["min_z"]]
+            ax.scatter(x_downsampled, y_downsampled, z_downsampled, c="b", marker="o")
+            ax.set_xlabel('X')
+            ax.set_ylabel('Y')
+            ax.set_zlabel('Z')
+            axis_range_max = max([self.mag_min_max_dict["max_x"],
+                                  self.mag_min_max_dict["max_y"],
+                                  self.mag_min_max_dict["max_z"]])
 
-        axis_rang_min = min([self.mag_min_max_dict["min_x"],
-                             self.mag_min_max_dict["min_y"],
-                             self.mag_min_max_dict["min_z"]])
+            axis_rang_min = min([self.mag_min_max_dict["min_x"],
+                                 self.mag_min_max_dict["min_y"],
+                                 self.mag_min_max_dict["min_z"]])
 
-        ax.set_xlim3d(axis_rang_min, axis_range_max)
-        ax.set_ylim3d(axis_rang_min, axis_range_max)
-        ax.set_zlim3d(axis_rang_min, axis_range_max)
-        textstr = "range x: " + str(ranges[0]) + "\n range y: " + str(ranges[1]) + " \n range z: " + str(ranges[2])
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        fig.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
-        fig.show()
+            ax.set_xlim3d(axis_rang_min, axis_range_max)
+            ax.set_ylim3d(axis_rang_min, axis_range_max)
+            ax.set_zlim3d(axis_rang_min, axis_range_max)
+            textstr = "range x: " + str(ranges[0]) + "\n range y: " + str(ranges[1]) + " \n range z: " + str(ranges[2])
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            fig.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
+            fig.show()
 
     def plot_norm_mag_vs_sphere(self, down_sampling_step=10, plot_sphere=True, sphere_radius=1):
 
         # This normalization considers that the vectors start at the origin
 
         # TODO: fix normalization which is assumes all vectors start from the origin
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
+        if self.check_data_availability("mag"):
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
 
-        # normalize vectors
-        np_array = np.array([self.data["mag"][0], self.data["mag"][1], self.data["mag"][2]])
-        norm = np.sqrt((np_array*np_array).sum(axis=0))  # np*np element wise mul sum(axis=0) sum all squared components
-        norm_coordinates = np_array/norm
+            # normalize vectors
+            np_array = np.array([self.data["mag"][0], self.data["mag"][1], self.data["mag"][2]])
+            norm_coordinates = np_array/self.data["mag_magnitude"]
 
-        # down sample the normalized coordinates
-        x_down_sampled = self.downsample(norm_coordinates[0], down_sampling_step)
-        y_down_sampled = self.downsample(norm_coordinates[1], down_sampling_step)
-        z_down_sampled = self.downsample(norm_coordinates[2], down_sampling_step)
+            # down sample the normalized coordinates
+            x_down_sampled = self.downsample(norm_coordinates[0], down_sampling_step)
+            y_down_sampled = self.downsample(norm_coordinates[1], down_sampling_step)
+            z_down_sampled = self.downsample(norm_coordinates[2], down_sampling_step)
 
-        ax.scatter(x_down_sampled, y_down_sampled, z_down_sampled, c="b", marker="o")
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-        if plot_sphere:
-            u = np.linspace(0, 2 * np.pi, 100)
-            v = np.linspace(0, np.pi, 100)
+            ax.scatter(x_down_sampled, y_down_sampled, z_down_sampled, c="b", marker="o")
+            ax.set_xlabel('X')
+            ax.set_ylabel('Y')
+            ax.set_zlabel('Z')
+            if plot_sphere:
+                u = np.linspace(0, 2 * np.pi, 100)
+                v = np.linspace(0, np.pi, 100)
 
-            x = sphere_radius * np.outer(np.cos(u), np.sin(v))
-            y = sphere_radius * np.outer(np.sin(u), np.sin(v))
-            z = sphere_radius * np.outer(np.ones(np.size(u)), np.cos(v))
-            ax.plot_surface(x, y, z, rstride=4, cstride=4, color='r', alpha=0.2)
+                x = sphere_radius * np.outer(np.cos(u), np.sin(v))
+                y = sphere_radius * np.outer(np.sin(u), np.sin(v))
+                z = sphere_radius * np.outer(np.ones(np.size(u)), np.cos(v))
+                ax.plot_surface(x, y, z, rstride=4, cstride=4, color='r', alpha=0.2)
 
-        # using complete data set for min max
-        ranges = [max(norm_coordinates[0])-min(norm_coordinates[0]),
-                  max(norm_coordinates[1])-min(norm_coordinates[1]),
-                  max(norm_coordinates[2])-min(norm_coordinates[2])]
+            # using complete data set for min max
+            ranges = [max(norm_coordinates[0])-min(norm_coordinates[0]),
+                      max(norm_coordinates[1])-min(norm_coordinates[1]),
+                      max(norm_coordinates[2])-min(norm_coordinates[2])]
 
-        textstr = "range x: " + str(ranges[0]) + "\n range y: " + str(ranges[1]) + " \n range z: " + str(ranges[2])
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        fig.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
-        axis_range_all = 1.1
-        # axis_range = [-axis_range_all, axis_range_all, -axis_range_all, axis_range_all, -axis_range_all, axis_range_all]
-        # axes = Axes3D(fig)
-        ax.set_xlim3d(-axis_range_all, axis_range_all)
-        ax.set_ylim3d(-axis_range_all, axis_range_all)
-        ax.set_zlim3d(-axis_range_all, axis_range_all)
-        fig.show()
+            textstr = "range x: " + str(ranges[0]) + "\n range y: " + str(ranges[1]) + " \n range z: " + str(ranges[2])
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            fig.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
+            axis_range_all = 1.1
+            # axis_range = [-axis_range_all, axis_range_all, -axis_range_all, axis_range_all, -axis_range_all, axis_range_all]
+            # axes = Axes3D(fig)
+            ax.set_xlim3d(-axis_range_all, axis_range_all)
+            ax.set_ylim3d(-axis_range_all, axis_range_all)
+            ax.set_zlim3d(-axis_range_all, axis_range_all)
+            fig.show()
 
     def plot_all_imu_data(self):
         self.plot_rpy()
@@ -225,22 +239,29 @@ class plot_imu_data(object):
         return_list.append(input_array[-1])  # make sure the last entry is inside the list
         return return_list
 
+    def check_data_availability(self, dict_entry):
+        if len(self.data[dict_entry][0]) and len(self.data[dict_entry][1]) and len(self.data[dict_entry][2]):
+            return True
+        print ("no %s data to plot, skipping" % dict_entry)
+        return False
+
 if __name__ == '__main__':
 
-    file_name_of_data_default = "um7_data.npy"
+    file_name_of_data_default = "Xsense_data_sdk_calib_tt.npy"
     path_of_file_save_default = ""
-    imu_subs_topic_name_default = '/sensor/imu/um7/data'  #'/sensor/imu/xIMU/data' # /sensor/imu/razor_imu/data # /sensor/imu/xsens_mti/data
-    mag_subs_topic_name_default = '/sensor/imu/um7/magfield_msg'  # '/sensor/imu/xIMU/magfield_msg' # /sensor/imu/razor_imu/mag_calib # /sensor/imu/xsens_mti/mag_calib
+    imu_subs_topic_name_default = '/sensor/imu/xsens_mti/data'  #'/sensor/imu/xIMU/data' # /sensor/imu/razor_imu/data # /sensor/imu/xsens_mti/data # /sensor/imu/um7/data
+    mag_subs_topic_name_default = '/sensor/imu/xsens_mti/mag_calib'  # '/sensor/imu/xIMU/magfield_msg' # /sensor/imu/razor_imu/mag_calib # /sensor/imu/xsens_mti/mag_calib # /sensor/imu/um7/magfield_msg
     rospy.init_node("capture_imu_data")
 
     # read parameters
-    imu_subs_topic_name = rospy.get_param('imu_data_topic_name', imu_subs_topic_name_default)
-    mag_subs_topic_name = rospy.get_param('magnetic_field_data_topic_name', mag_subs_topic_name_default)
-    file_name_of_data = rospy.get_param('file_save_name', file_name_of_data_default)
-    path_of_file_save = rospy.get_param('file_save_path', path_of_file_save_default)
+    file_name_of_data = rospy.get_param("~file_name_of_data", file_name_of_data_default)
+    path_of_file_save = rospy.get_param("~path_of_file_save", path_of_file_save_default)
+    imu_subs_topic_name = rospy.get_param("~imu_subscription_topic_name", imu_subs_topic_name_default)
+    mag_subs_topic_name = rospy.get_param("~mag_subscription_topic_name", mag_subs_topic_name_default)
 
     # start data capture
     imu_data_cap_obj = imu_data_capture(imu_subs_topic_name, mag_subs_topic_name)
     rospy.spin()
     # save data to HDD
-    np.save(path_of_file_save+file_name_of_data,imu_data_cap_obj.data_dic)
+    np.save(path_of_file_save + file_name_of_data, imu_data_cap_obj.data_dic)
+    print "file saved to: \n " + path_of_file_save+file_name_of_data
