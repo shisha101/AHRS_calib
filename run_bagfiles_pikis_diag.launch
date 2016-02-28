@@ -18,8 +18,8 @@
 
 <!-- Plot_gps -->
 <group if="$(arg plot_gps)">
-    <node pkg="test_code" type="plot_piksi_vs_trimble_orientation.py" name="plot_piksi_vs_trimble_orientation" output="screen" />
-    <node pkg="test_code" type="plot_piksi_vs_trimble.py" name="plot_piksi_vs_trimble" output="screen"/>
+    <node pkg="evaluation_code" type="plot_piksi_vs_trimble_orientation.py" name="plot_piksi_vs_trimble_orientation" output="screen" />
+    <node pkg="evaluation_code" type="plot_piksi_vs_trimble.py" name="plot_piksi_vs_trimble" output="screen"/>
 </group>
 
 <!-- imu_gui -->
