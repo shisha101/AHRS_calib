@@ -1,6 +1,9 @@
-from capture_imu_data import plot_imu_data
-import numpy as np
+#!/usr/bin/env python
 import sys
+from os import path
+import numpy as np
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+from src.imu_calib_modu.imu_calibration_visualization import plot_imu_data
 
 if __name__ == '__main__':
     file_name_of_data_default = "Xsens_data_onboard.npy"
@@ -20,7 +23,7 @@ if __name__ == '__main__':
     plot_obj = plot_imu_data(dic_from_drive)
     plot_obj.plot_all_imu_data()
     plot_obj.plot_mag_scatter_raw()
-    plot_obj.plot_norm_mag_vs_sphere(sphere_radius=1.0, plot_sphere=True) # should be used post calibration
+    plot_obj.plot_norm_mag_vs_sphere(sphere_radius=1.0, plot_sphere=True)  # should be used post calibration
     print "Not that the raw sensor data acc, gyro, and mag are present only on the original sensor topics and not on" \
           "the filtered madgwick data topic. Since they are exactly the same"
     raw_input("press to exit")
