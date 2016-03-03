@@ -1,8 +1,9 @@
 <launch>
+<arg name="Imu_name" default="Razor" />
 
   <include file="$(find razor_imu_9dof)/launch/razor-pub-and-display.launch"> </include>
 
-  <node pkg="imu_visualization" type="imu_sensor_calibration.py" name="imu_sensor_calibration" output="screen">
+  <node pkg="imu_calibration" type="imu_acc_gyro_calibration.py" name="$(arg Imu_name)_imu_acc_gyro_calibration" output="screen">
 	<param name="imu_data_topic_name" value="/sensor/imu/razor_imu/data" />
 	<param name="mag_data_topic_name" value="/sensor/imu/razor_imu/mag_raw" />
     <param name="imu_name" value="Razor_imu" />

@@ -1,8 +1,10 @@
 <launch>
 
+  <arg name="Imu_name" default="um7" />
+
   <include file="$(find um7)/launch/um7_pub_and_display.launch"> </include>
   
-  <node pkg="imu_visualization" type="Coordinate_system_correction.py" name="Coordinate_system_correction" output="screen">
+  <node pkg="imu_calibration" type="coordinate_system_correction.py" name="$(arg Imu_name)_coordinate_system_correction" output="screen">
 	<param name="imu_data_topic_name" value="/sensor/imu/um7/data" />
 	<param name="mag_data_topic_name" value="/sensor/imu/um7/magfield_msg" />
     <param name="imu_name" value="CHRobotics_imu" />
