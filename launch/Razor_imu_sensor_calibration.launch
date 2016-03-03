@@ -7,7 +7,7 @@
 	<param name="imu_data_topic_name" value="/sensor/imu/razor_imu/data" />
 	<param name="mag_data_topic_name" value="/sensor/imu/razor_imu/mag_raw" />
     <param name="imu_name" value="Razor_imu" />
-    <param name="package_path" value="$(find imu_visualization)/configs/" /> -->
+    <param name="package_path" value="$(find imu_calibration)/configs/" /> -->
 	<!-- <param name="mag_data_vector_topic_name" value="/sensor/imu/xsens_mti/mag_calib" /> -->
   </node>
 </launch>
