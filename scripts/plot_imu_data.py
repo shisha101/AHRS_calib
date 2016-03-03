@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import sys
-from os import path
+
 import numpy as np
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-from src.imu_calib_modu.imu_calibration_visualization import plot_imu_data
+# sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+from imu_calibration.imu_calibration_visualization import plot_imu_data
 
 if __name__ == '__main__':
-    file_name_of_data_default = "Xsens_data_onboard.npy"
+    file_name_of_data_default = "Xsens_data_onboard_office.npy"
     path_of_file_load_default = "../data/imu_recordings/"
     if len(sys.argv) < 2:
         print "no file specified. Using default value"
