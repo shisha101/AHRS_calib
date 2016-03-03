@@ -1,6 +1,5 @@
 import numpy as np
-import sys
-from itertools import islice
+import yaml
 
 class imu_mag_calibration(object):
     def __init__(self, data_dict):
@@ -9,7 +8,7 @@ class imu_mag_calibration(object):
         """
         self.dict_entry = "mag"
         self.data_dict = data_dict
-        self.calib_values = {"sensitivities": None, "bias": None}
+        self.calib_values = {"sensitivities": None, "bias_w_sensitivity": None, "bias_simple": None}
         self.number_of_points = len(self.data_dict[self.dict_entry][0])
         self.ones_vector = np.ones(self.number_of_points)
 
@@ -45,6 +44,7 @@ class imu_mag_calibration(object):
         # parameters = pinv * np.matrix(sq_vals_np[0]).T
         parameters, residual, p, pp = np.linalg.lstsq(measurement_matrix,  np.matrix(sq_vals_np[0]).T)
         parameters = np.squeeze(np.asarray(parameters))  # convert from matrix to array
+        parameters = parameters.tolist()
         # print parameters
 
         # print "the parameters"
@@ -59,26 +59,26 @@ class imu_mag_calibration(object):
         bias.append(parameters[0]/2)
         bias.append(parameters[1]/(2*parameters[3]))
         bias.append(parameters[2]/(2*parameters[4]))
-        self.calib_values["bias"] = bias
+        self.calib_values["bias_w_sensitivity"] = bias
         sensitivity = []
         A = parameters[5] + bias[0]**2 + parameters[3] * bias[1]**2 + parameters[4] * bias[2]**2
         B = A / parameters[3]
         C = A / parameters[4]
-        sensitivity.append(np.sqrt(1/A))
-        sensitivity.append(np.sqrt(1/B))
-        sensitivity.append(np.sqrt(1/C))
+        sensitivity.append(np.sqrt(1/A).tolist())
+        sensitivity.append(np.sqrt(1/B).tolist())
+        sensitivity.append(np.sqrt(1/C).tolist())
         self.calib_values["sensitivities"] = sensitivity
         print "the scaling factors for the magnetometer are x: %s, y: %s, z: %s" % (self.calib_values["sensitivities"][0],
                                                                                self.calib_values["sensitivities"][1],
                                                                                self.calib_values["sensitivities"][2])
-        print "the biases for the magnetometer are x: %s, y: %s, z: %s" % (self.calib_values["bias"][0],
-                                                                      self.calib_values["bias"][1],
-                                                                      self.calib_values["bias"][2])
+        print "the biases for the magnetometer are x: %s, y: %s, z: %s" % (self.calib_values["bias_w_sensitivity"][0],
+                                                                      self.calib_values["bias_w_sensitivity"][1],
+                                                                      self.calib_values["bias_w_sensitivity"][2])
         print "the quality without calibration is %s positive and negative percent off > |4| is bad" % (max(abs(np.array(bias))) * max(sensitivity))
         print "the residual is %s" % (residual[0, 0]/(self.number_of_points))
-        self.debug_magnitude(measurement_matrix, bias, sensitivity)
+        # self.debug_magnitude(measurement_matrix, bias, sensitivity)
 
-    def debug_magnitude(self, measurement_matrix, bias, sensitivity):
+    def debug_magnitude(measurement_matrix, bias, sensitivity):
         b = np.array(bias)
         sens_array = np.array(sensitivity)
         bias_corrected_measurements = measurement_matrix[:, 0:3] - b
@@ -119,41 +119,22 @@ class imu_mag_calibration(object):
         # parameters = pinv * np.matrix(sq_vals_np.sum(axis=0)).T
         parameters, residual, p, pp = np.linalg.lstsq(measurement_matrix,  np.matrix(sq_vals_np.sum(axis=0)).T)
         parameters = np.squeeze(np.asarray(parameters))  # convert from matrix to array
-        bias = (parameters[0:3]/2.0)
-        self.calib_values["bias"] = bias
+        bias = (parameters[0:3]/2.0).tolist()
+        self.calib_values["bias_simple"] = bias
         print "the scaling factors for the magnetometer are x: %s, y: %s, z: %s" % (1.0, 1.0, 1.0)
-        print "the biases for the magnetometer are x: %s, y: %s, z: %s" % (self.calib_values["bias"][0],
-                                                                      self.calib_values["bias"][1],
-                                                                      self.calib_values["bias"][2])
+        print "the biases for the magnetometer are x: %s, y: %s, z: %s" % (self.calib_values["bias_simple"][0],
+                                                                      self.calib_values["bias_simple"][1],
+                                                                      self.calib_values["bias_simple"][2])
         magnetometer_vector_magnitude = np.sqrt(np.square(bias).sum() + parameters[3])
         print "the magnitude vector of the magnetometer is :%s" % magnetometer_vector_magnitude
-        print "the quality without calibration is %s percent off > 4 is bad" % ((abs(bias).max()/magnetometer_vector_magnitude)*100)
+        print "the quality without calibration is %s percent off > 4 is bad" % ((max(abs(np.array(bias)))/magnetometer_vector_magnitude)*100)
         print "the residual is %s" % (residual[0, 0]/(self.number_of_points))
 
     def check(self):
         pass
 
     def dump_to_file(self):
-        pass
-
-
-if __name__ == '__main__':
-    file_name_of_data_default = "Xsens_data_onboard_office.npy"
-    path_of_file_load_default = "/home/abs8rng/catkin_ws/src/my_packages/low_cost_navigation/evaluation_code/data/imu_recordings/"
-    if len(sys.argv) < 2:
-        print "no file specified. Using default value"
-        file_name_of_data = file_name_of_data_default
-        path_of_file_load = path_of_file_load_default
-    else:
-        file_name_of_data = sys.argv[1]
-        if len(sys.argv) == 3:
-            path_of_file_load = sys.argv[2]
-        else:
-            path_of_file_load = path_of_file_load_default
-
-    dic_from_drive = np.load(path_of_file_load + file_name_of_data).item()
-    imu_mag_calib_obj = imu_mag_calibration(dic_from_drive)
-    imu_mag_calib_obj.calculate_calib_parameters_hard_iron()
-    imu_mag_calib_obj.calculate_calib_parameters_x_sqr()
-    # imu_mag_calib_obj.calculate_calib_parameters_norm()
+        with open("../configs/bogus_sensor_config.yaml", 'w+') as f:
+            f.write('# autogenerated: Do not edit #\n')
+            f.write(yaml.dump(self.calib_values))
 
