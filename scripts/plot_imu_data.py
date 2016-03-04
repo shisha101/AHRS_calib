@@ -4,6 +4,8 @@ import os
 import yaml
 import numpy as np
 # sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+sys.path.append(parent_dir)
 from imu_calibration.imu_calibration_visualization import plot_imu_data
 
 if __name__ == '__main__':
