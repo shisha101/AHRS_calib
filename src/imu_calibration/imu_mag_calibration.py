@@ -78,7 +78,7 @@ class imu_mag_calibration(object):
         print "the residual is %s" % (residual[0, 0]/(self.number_of_points))
         # self.debug_magnitude(measurement_matrix, bias, sensitivity)
 
-    def debug_magnitude(measurement_matrix, bias, sensitivity):
+    def debug_magnitude(self, measurement_matrix, bias, sensitivity):
         b = np.array(bias)
         sens_array = np.array(sensitivity)
         bias_corrected_measurements = measurement_matrix[:, 0:3] - b

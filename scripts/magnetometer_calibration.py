@@ -1,4 +1,4 @@
-import sys, getopt
+import sys, getopt,os
 from imu_calibration.imu_mag_calibration import imu_mag_calibration
 import numpy as np
 
@@ -35,12 +35,16 @@ if __name__ == '__main__':
             print tutorial_string
 
     print "input data file = " + file_name_of_data
-    print "input path of data file = " + path_of_file_load_default
+    print "input path of data file = " + path_of_file_load
     print "calibration output file = " + file_name_of_output
 
-    dic_from_drive = np.load(path_of_file_load + file_name_of_data).item()
-    imu_mag_calib_obj = imu_mag_calibration(dic_from_drive)
-    imu_mag_calib_obj.calculate_calib_parameters_hard_iron()
-    imu_mag_calib_obj.calculate_calib_parameters_x_sqr()
-    imu_mag_calib_obj.dump_to_file(file_name_of_output)
+    if os.path.isfile(path_of_file_load + file_name_of_data):
+        dic_from_drive = np.load(path_of_file_load + file_name_of_data).item()
+        imu_mag_calib_obj = imu_mag_calibration(dic_from_drive)
+        imu_mag_calib_obj.calculate_calib_parameters_hard_iron()
+        imu_mag_calib_obj.calculate_calib_parameters_x_sqr()
+        imu_mag_calib_obj.dump_to_file(file_name_of_output)
+    else:
+        print "No the given file has not been found"
+        print path_of_file_load + file_name_of_data
     # imu_mag_calib_obj.calculate_calib_parameters_norm()

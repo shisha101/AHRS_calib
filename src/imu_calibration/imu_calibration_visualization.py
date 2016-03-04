@@ -62,7 +62,7 @@ class imu_data_capture(object):
 
 class plot_imu_data(object):
 
-    def __init__(self, dict_of_values, absolute_time=False):
+    def __init__(self, dict_of_values, absolute_time=False, bias_simple=None, sensitivity=None, bias_w_sensitivity=None):
         self.data = dict_of_values
         # self.data = imu_data_capture("a", "b")
         if not absolute_time:
@@ -77,11 +77,41 @@ class plot_imu_data(object):
         # np*np element wise mul sum(axis=0) sum all squared components
         self.data["mag_magnitude"] = np.sqrt((np_array*np_array).sum(axis=0))
 
+        if bias_simple is not None:
+            # do correction
+            self.bias_cor_val, self.bias_cor_magnitude = self.calculate_calibrated_magnetometer_values(bias_simple)
+        else:
+            self.bias_cor_val = None
+            self.bias_cor_magnitude = None
+        if bias_w_sensitivity is not None and sensitivity is not None:
+            # do correction
+            self.sens_cor_val, self.sens_cor_magnitude = self.calculate_calibrated_magnetometer_values(bias_simple,
+                                                                                                       sensitivity)
+        else:
+            self.sens_cor_val = None
+            self.sens_cor_magnitude = None
+
     def calc_min_max(self, data_dict_entry):
         min_max_dict = {"min_x": min(self.data[data_dict_entry][0]), "max_x": max(self.data[data_dict_entry][0]),
                         "min_y": min(self.data[data_dict_entry][1]), "max_y": max(self.data[data_dict_entry][1]),
                         "min_z": min(self.data[data_dict_entry][2]), "max_z": max(self.data[data_dict_entry][2])}
         return min_max_dict
+
+    def calculate_calibrated_magnetometer_values(self, bias, sensitivity=[1.0, 1.0, 1.0]):
+        measurement_matrix = np.matrix(self.data["mag"]).T   # create nx3 matrix from mag measurements
+        b = np.array(bias)
+        sens_array = np.array(sensitivity)
+        bias_corrected_measurements = measurement_matrix - b  # element wise subtraction (bias correction)
+        # sensitivity correction element wise multiplication
+        corrected_values = np.multiply(bias_corrected_measurements, sens_array)
+        magnitude_sq = np.multiply(corrected_values, corrected_values).sum(axis=1)
+        magnitude = np.sqrt(magnitude_sq)  # magnitude of mag readings after correction
+
+        magnitude = magnitude.tolist()
+        corrected_values = np.asarray(corrected_values).T
+
+        return corrected_values, magnitude
+
 
     def plot_imu(self, time_list, values_list, axis_names_list):
         if len(values_list) != len(axis_names_list) and len(values_list) != len(time_list):
@@ -120,32 +150,47 @@ class plot_imu_data(object):
             axis_names = ["mag_x", "mag_y", "mag_z"]
             self.plot_imu(self.data["time_mag"], self.data["mag"], axis_names)
 
-    def plot_mag_circles(self):
-
+    def plot_mag_circles_all(self):
+        axis_names = ["normal to X", "normal to Y", "normal to Z", "magnitude_mag_all_axis"]
         if self.check_data_availability("mag"):
-            axis_names = ["normal to X", "normal to Y", "normal to Z", "magnitude_mag_all_axis"]
-            fig = plt.figure()
-            plot_1 = fig.add_subplot(411)
-            plot_1.plot(self.data["mag"][1], self.data["mag"][2])
-            plot_1.set_xlabel(axis_names[0])
-            plot_1.axis("equal")
+            self.plot_mag_circles(self.data["mag"], self.data["mag_magnitude"], axis_names, mag_normalizer=max(self.data["mag_magnitude"]))
+        if self.sens_cor_val is not None:
+            self.plot_mag_circles(self.sens_cor_val, self.sens_cor_magnitude, axis_names, mag_normalizer=max(self.sens_cor_magnitude))
+        if self.bias_cor_val is not None:
+            self.plot_mag_circles(self.bias_cor_val, self.bias_cor_magnitude, axis_names, mag_normalizer=max(self.data["mag_magnitude"]))
+            # print self.bias_cor_magnitude
 
-            plot_2 = fig.add_subplot(412)
-            plot_2.plot(self.data["mag"][0], self.data["mag"][2])
-            plot_2.set_xlabel(axis_names[1])
-            plot_2.axis("equal")
+    def plot_mag_circles(self, data_entry_matrix, data_magnitude_vector, axis_names, mag_normalizer=1.0):
+        fig = plt.figure()
+        avg_mag = np.average(data_magnitude_vector)
+        plot_1 = fig.add_subplot(411)
+        self.draw_mag_2d_circle(plot_1, data_entry_matrix[1], data_entry_matrix[2], avg_mag)
 
-            plot_3 = fig.add_subplot(413)
-            plot_3.plot(self.data["mag"][0], self.data["mag"][1])
-            plot_3.set_xlabel(axis_names[2])
-            plot_3.axis("equal")
+        plot_2 = fig.add_subplot(412)
+        self.draw_mag_2d_circle(plot_2, data_entry_matrix[0], data_entry_matrix[2], avg_mag)
 
-            plot_4 = fig.add_subplot(414)
-            plot_4.plot(self.data["time_mag"], self.data["mag_magnitude"]/(max(self.data["mag_magnitude"])))
-            plot_4.set_xlabel(axis_names[3])
+        plot_3 = fig.add_subplot(413)
+        self.draw_mag_2d_circle(plot_3, data_entry_matrix[0], data_entry_matrix[1], avg_mag)
 
-            fig.tight_layout()
-            fig.show()
+        plot_4 = fig.add_subplot(414)
+        # plot_4.plot(self.data["time_mag"], data_magnitude_vector/(mag_normalizer))
+
+        # axes operations
+        plot_1.set_xlabel(axis_names[0])
+        plot_1.axis("equal")
+        plot_2.set_xlabel(axis_names[1])
+        plot_2.axis("equal")
+        plot_3.set_xlabel(axis_names[2])
+        plot_3.axis("equal")
+        plot_4.set_xlabel(axis_names[3])
+
+        fig.tight_layout()
+        fig.show()
+
+
+    def draw_mag_2d_circle(self, sub_plot_handle, x_axis_data, y_axis_data, radius , line_width=5):
+        sub_plot_handle.add_artist(plt.Circle((0, 0), radius, color='r', fill=False, linewidth=line_width, alpha=0.5))
+        sub_plot_handle.plot(x_axis_data, y_axis_data)
 
     def plot_mag_scatter_raw(self, downsampling_step=10):
         if self.check_data_availability("mag"):
@@ -230,7 +275,7 @@ class plot_imu_data(object):
         self.plot_acc()
         self.plot_gyro()
         self.plot_mag()
-        self.plot_mag_circles()
+        self.plot_mag_circles_all()
         # self.plot_mag_surface()
         # self.plot_mag_scatter()
 
