@@ -157,7 +157,7 @@ class plot_imu_data(object):
         if self.sens_cor_val is not None:
             self.plot_mag_circles(self.sens_cor_val, self.sens_cor_magnitude, axis_names, mag_normalizer=max(self.sens_cor_magnitude))
         if self.bias_cor_val is not None:
-            self.plot_mag_circles(self.bias_cor_val, self.bias_cor_magnitude, axis_names, mag_normalizer=max(self.data["mag_magnitude"]))
+            self.plot_mag_circles(self.bias_cor_val, self.bias_cor_magnitude, axis_names, mag_normalizer=max(self.bias_cor_magnitude))
             # print self.bias_cor_magnitude
 
     def plot_mag_circles(self, data_entry_matrix, data_magnitude_vector, axis_names, mag_normalizer=1.0):
@@ -173,8 +173,7 @@ class plot_imu_data(object):
         self.draw_mag_2d_circle(plot_3, data_entry_matrix[0], data_entry_matrix[1], avg_mag)
 
         plot_4 = fig.add_subplot(414)
-        # plot_4.plot(self.data["time_mag"], data_magnitude_vector/(mag_normalizer))
-
+        plot_4.plot(self.data["time_mag"], np.array(data_magnitude_vector)/mag_normalizer)
         # axes operations
         plot_1.set_xlabel(axis_names[0])
         plot_1.axis("equal")

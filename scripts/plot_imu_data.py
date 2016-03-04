@@ -50,6 +50,7 @@ if __name__ == '__main__':
                                    bias_w_sensitivity=mag_calib_params["bias_w_sensitivity"])
         else:
             print "NO config file for magnetometer has been found"
+            print "Could NOT find " + mag_config_file_path
             plot_obj = plot_imu_data(dic_from_drive)
 
         plot_obj.plot_all_imu_data()
