@@ -162,7 +162,7 @@ class imu_calibration():
 #             f.write('# Simple representation #\n')
             for entry in output_list_simple:
                 f.write(yaml.dump(entry))
-        x = yaml.load(file(self.absolute_path+self.imu_name+"_coordinate_config.yaml"))
+        x = yaml.load(file(self.absolute_path+self.imu_name+"_imu_coordinate_config.yaml"))
         print (x)
         
     def write_sub(self, vector, parameter):

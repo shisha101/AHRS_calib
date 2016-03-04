@@ -6,7 +6,7 @@
   <node pkg="imu_calibration" type="imu_acc_gyro_calibration.py" name="$(arg Imu_name)_imu_acc_gyro_calibration" output="screen">
 	<param name="imu_data_topic_name" value="/sensor/imu/um7/data" />
 	<param name="mag_data_topic_name" value="/sensor/imu/um7/magfield_msg" />
-    <param name="imu_name" value="CHRobotics_imu" />
+    <param name="imu_name" value="$(arg Imu_name)" />
     <param name="package_path" value="$(find imu_calibration)/configs/" /> -->
 	<!-- <param name="mag_data_vector_topic_name" value="/sensor/imu/um7/magfield" /> -->
   </node>
