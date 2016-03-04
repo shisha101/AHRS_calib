@@ -1,7 +1,7 @@
 import sys, getopt,os
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 sys.path.append(parent_dir)
-from imu_calibration.imu_mag_calibration import imu_mag_calibration
+from src.imu_calibration.imu_mag_calibration import imu_mag_calibration
 import numpy as np
 
 
