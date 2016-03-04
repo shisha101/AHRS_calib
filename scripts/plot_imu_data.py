@@ -9,9 +9,9 @@ sys.path.append(parent_dir)
 from src.imu_calibration.imu_calibration_visualization import plot_imu_data
 
 if __name__ == '__main__':
-    file_name_of_data_default = "Xsens_data_onboard_office.npy"
+    file_name_of_data_default = "um7_data_onboard_office.npy"
     path_of_file_load_default = "../data/imu_recordings/"
-    imu_name = "some"
+    imu_name = "um7"
     tut_string = "plot_imu_data.py -i <input_imu_file_name(.npy)> -n <imu_name> -p <path_where_to_find_input_file>"
     opt_string = "hp:i:n:"
     file_name_of_data = file_name_of_data_default
