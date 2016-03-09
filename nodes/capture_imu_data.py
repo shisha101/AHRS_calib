@@ -8,7 +8,7 @@ import numpy as np
 if __name__ == '__main__':
 
     file_name_of_data_default = "some_imu_data_sdk_calib_tt.npy"
-    path_of_file_save_default = ""
+    path_of_file_save_default = "../data/imu_recordings/"
     imu_subs_topic_name_default = '/sensor/imu/xsens_mti/data'  #'/sensor/imu/xIMU/data' # /sensor/imu/razor_imu/data # /sensor/imu/xsens_mti/data # /sensor/imu/um7/data
     mag_subs_topic_name_default = '/sensor/imu/xsens_mti/mag_calib'  # '/sensor/imu/xIMU/magfield_msg' # /sensor/imu/razor_imu/mag_calib # /sensor/imu/xsens_mti/mag_calib # /sensor/imu/um7/magfield_msg
     rospy.init_node("capture_imu_data")

@@ -5,7 +5,7 @@ import numpy as np
 
 if __name__ == '__main__':
     file_name_of_data_default = "Xsens_data_onboard_office.npy"
-    path_of_file_load_default = "/home/abs8rng/catkin_ws/src/my_packages/low_cost_navigation/evaluation_code/data/imu_recordings/"
+    path_of_file_load_default = "../data/imu_recordings/"
     imu_name_default = "some"
     opt_sting = "phi:o:"
     tutorial_string = "magnetometer_calibration.py -i <input_file_name(.npy)> -o <IMU_name(.yaml)> -p <path_of_input_file>"

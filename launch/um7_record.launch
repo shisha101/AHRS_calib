@@ -10,7 +10,7 @@
   <group if="$(arg onboard_capture)">
     <node pkg="imu_calibration" type="capture_imu_data.py" name="$(arg Imu_name)_onboard_capture" output="screen">
       <param name="file_name_of_data" value="$(arg Imu_name)_data_onboard.npy" />
-      <param name="path_of_file_save" value="$(find evaluation_code)/data/imu_recordings/" />
+      <param name="path_of_file_save" value="$(find imu_calibration)/data/imu_recordings/" />
       <param name="imu_subscription_topic_name" value="/sensor/imu/um7/data" />
       <param name="mag_subscription_topic_name" value="/sensor/imu/um7/magfield_msg" />
     </node>
@@ -20,7 +20,7 @@
   <group if="$(arg ros_madgwick_capture)">
     <node pkg="imu_calibration" type="capture_imu_data.py" name="$(arg Imu_name)_madgwick_capture" output="screen">
       <param name="file_name_of_data" value="$(arg Imu_name)_data_madgwick.npy" />
-      <param name="path_of_file_save" value="$(find evaluation_code)/data/imu_recordings/" />
+      <param name="path_of_file_save" value="$(find imu_calibration)/data/imu_recordings/" />
       <param name="imu_subscription_topic_name" value="madgwick_imu_filter_node/$(arg Imu_name)/imu" />
       <param name="mag_subscription_topic_name" value="/sensor/imu/um7/magfield_msg" />
     </node>
