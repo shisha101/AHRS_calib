@@ -154,10 +154,10 @@ class plot_imu_data(object):
         axis_names = ["normal to X", "normal to Y", "normal to Z", "magnitude_mag_all_axis"]
         if self.check_data_availability("mag"):
             self.plot_mag_circles(self.data["mag"], self.data["mag_magnitude"], axis_names, mag_normalizer=max(self.data["mag_magnitude"]))
-        if self.sens_cor_val is not None:
-            self.plot_mag_circles(self.sens_cor_val, self.sens_cor_magnitude, axis_names, mag_normalizer=max(self.sens_cor_magnitude))
         if self.bias_cor_val is not None:
             self.plot_mag_circles(self.bias_cor_val, self.bias_cor_magnitude, axis_names, mag_normalizer=max(self.bias_cor_magnitude))
+        if self.sens_cor_val is not None:
+            self.plot_mag_circles(self.sens_cor_val, self.sens_cor_magnitude, axis_names, mag_normalizer=max(self.sens_cor_magnitude))
             # print self.bias_cor_magnitude
 
     def plot_mag_circles(self, data_entry_matrix, data_magnitude_vector, axis_names, mag_normalizer=1.0):
@@ -228,46 +228,99 @@ class plot_imu_data(object):
 
         # TODO: fix normalization which is assumes all vectors start from the origin
         if self.check_data_availability("mag"):
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
+            self.plot_mag_vs_sphere(self.data["mag"], magnitude=self.data["mag_magnitude"], plot_sphere=plot_sphere, down_sampling_step=down_sampling_step)
+        if self.bias_cor_val is not None:
+            # pass
+            self.plot_mag_vs_sphere(self.bias_cor_val, magnitude=self.bias_cor_magnitude, plot_sphere=plot_sphere, down_sampling_step=down_sampling_step)
+        if self.sens_cor_val is not None:
+            # pass
+            self.plot_mag_vs_sphere(self.sens_cor_val, magnitude=1.0, plot_sphere=plot_sphere, down_sampling_step=down_sampling_step)
+            # fig = plt.figure()
+            # ax = fig.add_subplot(111, projection='3d')
+            #
+            # # normalize vectors
+            # np_array = np.array([self.data["mag"][0], self.data["mag"][1], self.data["mag"][2]])
+            # norm_coordinates = np_array/self.data["mag_magnitude"]
+            #
+            # # down sample the normalized coordinates
+            # x_down_sampled = self.downsample(norm_coordinates[0], down_sampling_step)
+            # y_down_sampled = self.downsample(norm_coordinates[1], down_sampling_step)
+            # z_down_sampled = self.downsample(norm_coordinates[2], down_sampling_step)
+            #
+            # ax.scatter(x_down_sampled, y_down_sampled, z_down_sampled, c="b", marker="o")
+            # ax.set_xlabel('X')
+            # ax.set_ylabel('Y')
+            # ax.set_zlabel('Z')
+            # if plot_sphere:
+            #     u = np.linspace(0, 2 * np.pi, 100)
+            #     v = np.linspace(0, np.pi, 100)
+            #
+            #     x = sphere_radius * np.outer(np.cos(u), np.sin(v))
+            #     y = sphere_radius * np.outer(np.sin(u), np.sin(v))
+            #     z = sphere_radius * np.outer(np.ones(np.size(u)), np.cos(v))
+            #     ax.plot_surface(x, y, z, rstride=4, cstride=4, color='r', alpha=0.2)
+            #
+            # # using complete data set for min max
+            # ranges = [max(norm_coordinates[0])-min(norm_coordinates[0]),
+            #           max(norm_coordinates[1])-min(norm_coordinates[1]),
+            #           max(norm_coordinates[2])-min(norm_coordinates[2])]
+            #
+            # textstr = "range x: " + str(ranges[0]) + "\n range y: " + str(ranges[1]) + " \n range z: " + str(ranges[2])
+            # props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            # fig.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
+            # axis_range_all = 1.1
+            # # axis_range = [-axis_range_all, axis_range_all, -axis_range_all, axis_range_all, -axis_range_all, axis_range_all]
+            # # axes = Axes3D(fig)
+            # ax.set_xlim3d(-axis_range_all, axis_range_all)
+            # ax.set_ylim3d(-axis_range_all, axis_range_all)
+            # ax.set_zlim3d(-axis_range_all, axis_range_all)
+            # fig.show()
 
-            # normalize vectors
-            np_array = np.array([self.data["mag"][0], self.data["mag"][1], self.data["mag"][2]])
-            norm_coordinates = np_array/self.data["mag_magnitude"]
+    def plot_mag_vs_sphere(self, inputs, magnitude=1.0, plot_sphere=True, down_sampling_step=10):
+        avg_mag = np.average(magnitude)
+        radius = avg_mag
+        # print radius
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
 
-            # down sample the normalized coordinates
-            x_down_sampled = self.downsample(norm_coordinates[0], down_sampling_step)
-            y_down_sampled = self.downsample(norm_coordinates[1], down_sampling_step)
-            z_down_sampled = self.downsample(norm_coordinates[2], down_sampling_step)
+        # normalize vectors
+        np_array = np.array(inputs)
+        # norm_coordinates = np_array/magnitude
+        norm_coordinates = np_array
+        # down sample the normalized coordinates
+        x_down_sampled = self.downsample(norm_coordinates[0], down_sampling_step)
+        y_down_sampled = self.downsample(norm_coordinates[1], down_sampling_step)
+        z_down_sampled = self.downsample(norm_coordinates[2], down_sampling_step)
 
-            ax.scatter(x_down_sampled, y_down_sampled, z_down_sampled, c="b", marker="o")
-            ax.set_xlabel('X')
-            ax.set_ylabel('Y')
-            ax.set_zlabel('Z')
-            if plot_sphere:
-                u = np.linspace(0, 2 * np.pi, 100)
-                v = np.linspace(0, np.pi, 100)
+        ax.scatter(x_down_sampled, y_down_sampled, z_down_sampled, c="b", marker="o")
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
+        if plot_sphere:
+            u = np.linspace(0, 2 * np.pi, 100)
+            v = np.linspace(0, np.pi, 100)
 
-                x = sphere_radius * np.outer(np.cos(u), np.sin(v))
-                y = sphere_radius * np.outer(np.sin(u), np.sin(v))
-                z = sphere_radius * np.outer(np.ones(np.size(u)), np.cos(v))
-                ax.plot_surface(x, y, z, rstride=4, cstride=4, color='r', alpha=0.2)
+            x = radius * np.outer(np.cos(u), np.sin(v))
+            y = radius * np.outer(np.sin(u), np.sin(v))
+            z = radius * np.outer(np.ones(np.size(u)), np.cos(v))
+            ax.plot_surface(x, y, z, rstride=4, cstride=4, color='r', alpha=0.2)
 
-            # using complete data set for min max
-            ranges = [max(norm_coordinates[0])-min(norm_coordinates[0]),
-                      max(norm_coordinates[1])-min(norm_coordinates[1]),
-                      max(norm_coordinates[2])-min(norm_coordinates[2])]
+        # using complete data set for min max
+        ranges = [max(norm_coordinates[0])-min(norm_coordinates[0]),
+                  max(norm_coordinates[1])-min(norm_coordinates[1]),
+                  max(norm_coordinates[2])-min(norm_coordinates[2])]
 
-            textstr = "range x: " + str(ranges[0]) + "\n range y: " + str(ranges[1]) + " \n range z: " + str(ranges[2])
-            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-            fig.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
-            axis_range_all = 1.1
-            # axis_range = [-axis_range_all, axis_range_all, -axis_range_all, axis_range_all, -axis_range_all, axis_range_all]
-            # axes = Axes3D(fig)
-            ax.set_xlim3d(-axis_range_all, axis_range_all)
-            ax.set_ylim3d(-axis_range_all, axis_range_all)
-            ax.set_zlim3d(-axis_range_all, axis_range_all)
-            fig.show()
+        textstr = "range x: " + str(ranges[0]) + "\n range y: " + str(ranges[1]) + " \n range z: " + str(ranges[2])
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        fig.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
+        axis_range_all = 1.1 * avg_mag
+        # axis_range = [-axis_range_all, axis_range_all, -axis_range_all, axis_range_all, -axis_range_all, axis_range_all]
+        # axes = Axes3D(fig)
+        ax.set_xlim3d(-axis_range_all, axis_range_all)
+        ax.set_ylim3d(-axis_range_all, axis_range_all)
+        ax.set_zlim3d(-axis_range_all, axis_range_all)
+        fig.show()
+
 
     def plot_all_imu_data(self):
         self.plot_rpy()
