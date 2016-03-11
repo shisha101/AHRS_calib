@@ -4,7 +4,7 @@ import os
 import yaml
 import numpy as np
 # sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-from imu_calibration.imu_calibration_visualization import plot_imu_data
+from imu_calibration.imu_calibration_visualization import PlotImuData
 
 if __name__ == '__main__':
     file_name_of_data_default = "Xsens_data_onboard_office.npy"
@@ -44,14 +44,14 @@ if __name__ == '__main__':
             print "config file for magnetometer has been found"
             print "config file path = " + mag_config_file_path
             mag_calib_params = yaml.load(file("../configs/"+imu_name+"_imu_mag_config.yaml"))
-            plot_obj = plot_imu_data(dic_from_drive,
+            plot_obj = PlotImuData(dic_from_drive,
                                    bias_simple=mag_calib_params["bias_simple"],
                                    sensitivity=mag_calib_params["sensitivities"],
                                    bias_w_sensitivity=mag_calib_params["bias_w_sensitivity"])
         else:
             print "NO config file for magnetometer has been found"
             print "Could NOT find " + mag_config_file_path
-            plot_obj = plot_imu_data(dic_from_drive)
+            plot_obj = PlotImuData(dic_from_drive)
 
         plot_obj.plot_all_imu_data()
         plot_obj.plot_mag_scatter_raw()

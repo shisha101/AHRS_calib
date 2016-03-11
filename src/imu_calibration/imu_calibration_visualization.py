@@ -8,9 +8,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from itertools import islice
 
 
-
-
-class imu_data_capture(object):
+class ImuDataCapture(object):
 
     def __init__(self, imu_tn, mag_tn):
         self.acc_data = [[], [], []]  # x, y, z
@@ -60,11 +58,13 @@ class imu_data_capture(object):
 
         self.data_dic["time_mag"].append(mag_msg.header.stamp)
 
-class plot_imu_data(object):
 
-    def __init__(self, dict_of_values, absolute_time=False, bias_simple=None, sensitivity=None, bias_w_sensitivity=None):
+class PlotImuData(object):
+
+    def __init__(self, dict_of_values, absolute_time=False,
+                 bias_simple=None, sensitivity=None, bias_w_sensitivity=None):
         self.data = dict_of_values
-        # self.data = imu_data_capture("a", "b")
+        # self.data = ImuDataCapture("a", "b")
         if not absolute_time:
             # convert time to duration
             self.data["time_mag"] = [(x - self.data["time_mag"][0]).to_sec() for x in self.data["time_mag"]]
@@ -112,7 +112,6 @@ class plot_imu_data(object):
 
         return corrected_values, magnitude
 
-
     def plot_imu(self, time_list, values_list, axis_names_list):
         if len(values_list) != len(axis_names_list) and len(values_list) != len(time_list):
             print "error cannot plot axis length not equal to name "
@@ -146,18 +145,21 @@ class plot_imu_data(object):
             self.plot_imu(self.data["time_imu"], self.data["gyro"], axis_names)
 
     def plot_mag(self):
-       if self.check_data_availability("mag"):
+        if self.check_data_availability("mag"):
             axis_names = ["mag_x", "mag_y", "mag_z"]
             self.plot_imu(self.data["time_mag"], self.data["mag"], axis_names)
 
     def plot_mag_circles_all(self):
         axis_names = ["normal to X", "normal to Y", "normal to Z", "magnitude_mag_all_axis"]
         if self.check_data_availability("mag"):
-            self.plot_mag_circles(self.data["mag"], self.data["mag_magnitude"], axis_names, mag_normalizer=max(self.data["mag_magnitude"]))
+            self.plot_mag_circles(self.data["mag"], self.data["mag_magnitude"], axis_names,
+                                  mag_normalizer=max(self.data["mag_magnitude"]))
         if self.sens_cor_val is not None:
-            self.plot_mag_circles(self.sens_cor_val, self.sens_cor_magnitude, axis_names, mag_normalizer=max(self.sens_cor_magnitude))
+            self.plot_mag_circles(self.sens_cor_val, self.sens_cor_magnitude, axis_names,
+                                  mag_normalizer=max(self.sens_cor_magnitude))
         if self.bias_cor_val is not None:
-            self.plot_mag_circles(self.bias_cor_val, self.bias_cor_magnitude, axis_names, mag_normalizer=max(self.bias_cor_magnitude))
+            self.plot_mag_circles(self.bias_cor_val, self.bias_cor_magnitude, axis_names,
+                                  mag_normalizer=max(self.bias_cor_magnitude))
             # print self.bias_cor_magnitude
 
     def plot_mag_circles(self, data_entry_matrix, data_magnitude_vector, axis_names, mag_normalizer=1.0):
@@ -185,7 +187,6 @@ class plot_imu_data(object):
 
         fig.tight_layout()
         fig.show()
-
 
     def draw_mag_2d_circle(self, sub_plot_handle, x_axis_data, y_axis_data, radius , line_width=5):
         sub_plot_handle.add_artist(plt.Circle((0, 0), radius, color='r', fill=False, linewidth=line_width, alpha=0.5))
@@ -224,9 +225,6 @@ class plot_imu_data(object):
 
     def plot_norm_mag_vs_sphere(self, down_sampling_step=10, plot_sphere=True, sphere_radius=1):
 
-        # This normalization considers that the vectors start at the origin
-
-        # TODO: fix normalization which is assumes all vectors start from the origin
         if self.check_data_availability("mag"):
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
@@ -262,8 +260,6 @@ class plot_imu_data(object):
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             fig.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
             axis_range_all = 1.1
-            # axis_range = [-axis_range_all, axis_range_all, -axis_range_all, axis_range_all, -axis_range_all, axis_range_all]
-            # axes = Axes3D(fig)
             ax.set_xlim3d(-axis_range_all, axis_range_all)
             ax.set_ylim3d(-axis_range_all, axis_range_all)
             ax.set_zlim3d(-axis_range_all, axis_range_all)
