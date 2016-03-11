@@ -56,7 +56,7 @@ if __name__ == '__main__':
         plot_obj.plot_all_imu_data()
         plot_obj.plot_mag_scatter_raw()
         plot_obj.plot_norm_mag_vs_sphere(sphere_radius=1.0, plot_sphere=True)  # should be used post calibration
-        print "Not that the raw sensor data acc, gyro, and mag are present only on the original sensor topics and not" \
+        print "Note that the raw sensor data acc, gyro, and mag are present only on the original sensor topics and not" \
               " onthe filtered madgwick data topic. Since they are exactly the same"
         raw_input("press to exit")
     else:
