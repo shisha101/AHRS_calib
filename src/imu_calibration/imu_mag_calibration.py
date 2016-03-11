@@ -1,7 +1,8 @@
 import numpy as np
 import yaml
 
-class imu_mag_calibration(object):
+
+class ImuMagCalibration(object):
     def __init__(self, data_dict):
         """
         :param data_dict: a dictionary containing the imu data, must contain mag data see capture_imu_data.py
@@ -34,7 +35,7 @@ class imu_mag_calibration(object):
 
     def calculate_calib_parameters_x_sqr(self):
         measurement_matrix, sq_vals_np = self.create_reading_matrix_x_sqr()
-        pinv = np.linalg.pinv(measurement_matrix)
+        # pinv = np.linalg.pinv(measurement_matrix)
         print "the number of points used is: %i" % self.number_of_points
         print "the condition number of the measurement matrix is %f " % np.linalg.cond(measurement_matrix)
         # print "Hi"
@@ -114,7 +115,7 @@ class imu_mag_calibration(object):
         measurement_matrix, sq_vals_np = self.create_reading_matrix_hard_iron()
         print "the number of points used is: %i" % self.number_of_points
         print "the condition number of the measurement matrix is %f " % np.linalg.cond(measurement_matrix)
-        pinv = np.linalg.pinv(measurement_matrix)
+        # pinv = np.linalg.pinv(measurement_matrix)
         # print np.matrix(sq_vals_np.sum(axis=0)).T.shape
         # parameters = pinv * np.matrix(sq_vals_np.sum(axis=0)).T
         parameters, residual, p, pp = np.linalg.lstsq(measurement_matrix,  np.matrix(sq_vals_np.sum(axis=0)).T)

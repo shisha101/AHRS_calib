@@ -1,5 +1,5 @@
 import sys, getopt,os
-from imu_calibration.imu_mag_calibration import imu_mag_calibration
+from imu_calibration.imu_mag_calibration import ImuMagCalibration
 import numpy as np
 
 
@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     if os.path.isfile(path_of_file_load + file_name_of_data):
         dic_from_drive = np.load(path_of_file_load + file_name_of_data).item()
-        imu_mag_calib_obj = imu_mag_calibration(dic_from_drive)
+        imu_mag_calib_obj = ImuMagCalibration(dic_from_drive)
         imu_mag_calib_obj.calculate_calib_parameters_hard_iron()
         imu_mag_calib_obj.calculate_calib_parameters_x_sqr()
         imu_mag_calib_obj.dump_to_file(imu_name)

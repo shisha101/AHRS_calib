@@ -8,9 +8,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from itertools import islice
 
 
-
-
-class imu_data_capture(object):
+class ImuDataCapture(object):
 
     def __init__(self, imu_tn, mag_tn):
         self.acc_data = [[], [], []]  # x, y, z
@@ -60,11 +58,12 @@ class imu_data_capture(object):
 
         self.data_dic["time_mag"].append(mag_msg.header.stamp)
 
-class plot_imu_data(object):
+
+class PlotImuData(object):
 
     def __init__(self, dict_of_values, absolute_time=False, bias_simple=None, sensitivity=None, bias_w_sensitivity=None):
         self.data = dict_of_values
-        # self.data = imu_data_capture("a", "b")
+        # self.data = ImuDataCapture("a", "b")
         if not absolute_time:
             # convert time to duration
             self.data["time_mag"] = [(x - self.data["time_mag"][0]).to_sec() for x in self.data["time_mag"]]
