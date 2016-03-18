@@ -2,9 +2,12 @@
 <arg name="Imu_name" default="um7" />
 <arg name="onboard_capture" default="true" />
 <arg name="ros_madgwick_capture" default="true" />
+<arg name="launch_driver" default="true" />
 
+  <group if="$(arg launch_driver)">
   <!-- start driver and visualization -->
-  <include file="$(find um7)/launch/um7_driver.launch"> </include>
+    <include file="$(find um7)/launch/um7_driver.launch"> </include>
+  </group>
   
   <!-- recording of on board algorithm -->
   <group if="$(arg onboard_capture)">
