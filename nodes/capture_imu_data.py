@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 # import evaluation_code.src.imu_calib_modu.imu_calib_modu
-import imu_calibration.imu_calibration_visualization as imu_calib
+from imu_calibration.imu_calibration_visualization import ImuDataCapture
 # import evaluation_code.src.imu_calib_modu
 import numpy as np
 
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     mag_subs_topic_name = rospy.get_param("~mag_subscription_topic_name", mag_subs_topic_name_default)
 
     # start data capture
-    imu_data_cap_obj = imu_calib.imu_data_capture(imu_subs_topic_name, mag_subs_topic_name)
+    imu_data_cap_obj = ImuDataCapture(imu_subs_topic_name, mag_subs_topic_name)
     rospy.spin()
     # save data to HDD
     np.save(path_of_file_save + file_name_of_data, imu_data_cap_obj.data_dic)
