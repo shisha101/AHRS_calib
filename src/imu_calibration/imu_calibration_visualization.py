@@ -6,6 +6,7 @@ from tf import transformations
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from itertools import islice
+import math
 
 
 class ImuDataCapture(object):
@@ -132,7 +133,10 @@ class PlotImuData(object):
     def plot_rpy(self):
         if self.check_data_availability("orient_rpy"):
             axis_names = ["roll", "pitch", "yaw"]
-            self.plot_imu(self.data["time_imu"], self.data["orient_rpy"], axis_names)
+            r = [e*180.0/math.pi for e in self.data["orient_rpy"][0]]
+            p = [e*180.0/math.pi for e in self.data["orient_rpy"][1]]
+            y = [e*180.0/math.pi for e in self.data["orient_rpy"][2]]
+            self.plot_imu(self.data["time_imu"], [r, p, y], axis_names)
 
     def plot_acc(self):
         if self.check_data_availability("acc"):
