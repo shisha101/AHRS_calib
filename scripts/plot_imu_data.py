@@ -10,10 +10,12 @@ if __name__ == '__main__':
     file_name_of_data_default = "Xsens_data_onboard_office.npy"
     path_of_file_load_default = "../data/imu_recordings/"
     imu_name = "some"
-    tut_string = "plot_imu_data.py -i <input_imu_file_name(.npy)> -n <imu_name> -p <path_where_to_find_input_file>"
-    opt_string = "hp:i:n:"
+    tut_string = "plot_imu_data.py -i <input_imu_file_name(.npy)> -n <imu_name> -p <path_where_to_find_input_file> " \
+                 "-s plot_statistics"
+    opt_string = "hsp:i:n:"
     file_name_of_data = file_name_of_data_default
     path_of_file_load = path_of_file_load_default
+    plot_statistics = False
 
     try:
         opts, arg = getopt.getopt(sys.argv[1:], opt_string)
@@ -28,8 +30,10 @@ if __name__ == '__main__':
             file_name_of_data = arg
         elif opt == "-p":
             path_of_file_load = arg
-        elif "-n":
+        elif opt == "-n":
             imu_name = arg
+        elif opt == "-s":
+            plot_statistics = True
         else:
             print tut_string
             assert False, "unhandled option"
@@ -58,6 +62,8 @@ if __name__ == '__main__':
         plot_obj.plot_norm_mag_vs_sphere(sphere_radius=1.0, plot_sphere=True)  # should be used post calibration
         print "Note that the raw sensor data acc, gyro, and mag are present only on the original sensor topics and not" \
               " on the filtered madgwick data topic. Since they are exactly the same"
+        if plot_statistics:
+            plot_obj.plot_statistics_all()
         raw_input("press to exit")
     else:
         print "No the given file has not been found"

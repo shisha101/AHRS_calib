@@ -1,5 +1,6 @@
 <launch>
 <arg name="Imu_name" default="xIMU" />
+<arg name="suffix" default="" />
 <arg name="onboard_capture" default="true" />
 <arg name="ros_madgwick_capture" default="false" />
 <arg name="ros_madgwick_corrected_capture" default="false" />
@@ -13,7 +14,7 @@
   <!-- recording of on board algorithm -->
   <group if="$(arg onboard_capture)">
     <node pkg="imu_calibration" type="capture_imu_data.py" name="$(arg Imu_name)_onboard_capture" output="screen">
-      <param name="file_name_of_data" value="$(arg Imu_name)_data_onboard.npy" />
+      <param name="file_name_of_data" value="$(arg Imu_name)_data_onboard$(arg suffix).npy" />
       <param name="path_of_file_save" value="$(find imu_calibration)/data/imu_recordings/" />
       <param name="imu_subscription_topic_name" value="/sensor/imu/xIMU/data" />
       <param name="mag_subscription_topic_name" value="/sensor/imu/xIMU/magfield_msg" />
@@ -23,7 +24,7 @@
   <!-- recording of madgwick ros algorithm -->
   <group if="$(arg ros_madgwick_capture)">
     <node pkg="imu_calibration" type="capture_imu_data.py" name="$(arg Imu_name)_madgwick_capture" output="screen">
-      <param name="file_name_of_data" value="$(arg Imu_name)_data_madgwick.npy" />
+      <param name="file_name_of_data" value="$(arg Imu_name)_data_madgwick$(arg suffix).npy" />
       <param name="path_of_file_save" value="$(find imu_calibration)/data/imu_recordings/" />
       <param name="imu_subscription_topic_name" value="madgwick_imu_filter_node/$(arg Imu_name)/imu" />
       <param name="mag_subscription_topic_name" value="/sensor/imu/xIMU/magfield_msg" />
@@ -33,7 +34,7 @@
       <!-- recording of madgwick corrected ros algorithm -->
   <group if="$(arg ros_madgwick_corrected_capture)">
     <node pkg="imu_calibration" type="capture_imu_data.py" name="$(arg Imu_name)_madgwick_corrected_capture" output="screen">
-      <param name="file_name_of_data" value="$(arg Imu_name)_data_madgwick_corrected.npy" />
+      <param name="file_name_of_data" value="$(arg Imu_name)_data_madgwick_corrected$(arg suffix).npy" />
       <param name="path_of_file_save" value="$(find imu_calibration)/data/imu_recordings/" />
       <param name="imu_subscription_topic_name" value="madgwick_imu_filter_corrected_node/$(arg Imu_name)/imu" />
       <param name="mag_subscription_topic_name" value="/sensor/imu/xIMU/magfield_msg" />

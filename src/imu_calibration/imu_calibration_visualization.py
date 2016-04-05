@@ -324,6 +324,62 @@ class PlotImuData(object):
         ax.set_zlim3d(-axis_range_all, axis_range_all)
         fig.show()
 
+    def plot_statistics_all(self):
+        self.plot_acc_statistics()
+        self.plot_gyro_statistics()
+        self.plot_mag_statistics()
+        self.plot_orientation_statistics()
+        pass
+
+    def plot_acc_statistics(self):
+        self.plot_statistics("acc")
+
+    def plot_gyro_statistics(self):
+        self.plot_statistics("gyro")
+
+    def plot_mag_statistics(self):
+        self.plot_statistics("mag")
+
+    def plot_orientation_statistics(self):
+        self.plot_statistics("orient_rpy")
+
+    def plot_statistics(self, dict_entry_string, axis_names=["x", "y", "z"], number_of_steps=50):
+
+        if dict_entry_string in self.data.keys():
+            data_list = self.data[dict_entry_string]
+            if len(data_list[0]) != len(data_list[1]) or len(data_list[0]) != len(data_list[2]):
+                print "ERROR, the lengths of the measurements do not match"
+            # print "length of x:%.1f, y:%.1f, z:%.1f" % (len(data_list[0]), len(data_list[1]), len(data_list[2]))
+            values = [np.array(data_list[0]), np.array(data_list[1]), np.array(data_list[2])]
+            mean = [entry.mean() for entry in values]
+            variance = [entry.var() for entry in values]
+            print "******** \n" \
+                  "the mean of the "+ dict_entry_string + " are x:%.20f, y:%.16f, z:%.16f" % tuple(mean)
+            print "the variance of the "+ dict_entry_string + " are x:%.20f, y:%.16f, z:%.16f" % tuple(variance)
+            print mean
+            print variance
+
+            fig = plt.figure()
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            num_of_subplots = 11 + 100*len(data_list)
+            axis_counter = 0
+            for data in data_list:
+                fig_curr = fig.add_subplot(num_of_subplots)
+                fig_curr.hist(data, number_of_steps, alpha=0.75)
+                fig_curr.set_xlabel(axis_names[axis_counter] + ' value')
+                fig_curr.set_ylabel('count')
+                # fig_curr.text(0.05, 0.95, dict_entry_string, fontsize=14, verticalalignment='top', bbox=props)
+                num_of_subplots += 1
+                axis_counter += 1
+            fig.text(0.05, 0.95, dict_entry_string, fontsize=14, verticalalignment='top', bbox=props)
+            fig.show()
+        else:
+            print "the given key %s is not present in the dict" % dict_entry_string
+
+
+
+
+
 
     def plot_all_imu_data(self):
         self.plot_rpy()
