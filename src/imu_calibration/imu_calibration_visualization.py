@@ -332,16 +332,20 @@ class PlotImuData(object):
         pass
 
     def plot_acc_statistics(self):
-        self.plot_statistics("acc")
+        if self.check_data_availability("acc"):
+            self.plot_statistics("acc")
 
     def plot_gyro_statistics(self):
-        self.plot_statistics("gyro")
+        if self.check_data_availability("gyro"):
+            self.plot_statistics("gyro")
 
     def plot_mag_statistics(self):
-        self.plot_statistics("mag")
+        if self.check_data_availability("mag"):
+            self.plot_statistics("mag")
 
     def plot_orientation_statistics(self):
-        self.plot_statistics("orient_rpy")
+        if self.check_data_availability("orient_rpy"):
+            self.plot_statistics("orient_rpy")
 
     def plot_statistics(self, dict_entry_string, axis_names=["x", "y", "z"], number_of_steps=50):
 
