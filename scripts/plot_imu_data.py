@@ -51,7 +51,9 @@ if __name__ == '__main__':
             plot_obj = PlotImuData(dic_from_drive,
                                    bias_simple=mag_calib_params["bias_simple"],
                                    sensitivity=mag_calib_params["sensitivities"],
-                                   bias_w_sensitivity=mag_calib_params["bias_w_sensitivity"])
+                                   bias_w_sensitivity=mag_calib_params["bias_w_sensitivity"],
+                                   elipsoid_mat=mag_calib_params["elipsoid_transformation"],
+                                   elipsoid_offset=mag_calib_params["elipsoid_center"])
         else:
             print "NO config file for magnetometer has been found"
             print "Could NOT find " + mag_config_file_path

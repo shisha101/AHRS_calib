@@ -2,6 +2,7 @@ import numpy as np
 import yaml
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import tf.transformations
 
 
 class ImuMagCalibration(object):
@@ -188,7 +189,7 @@ class ImuMagCalibration(object):
         u1 = eig_vec[:, index_of_max_eig_v]
         u2 = -v2 * u1
         param_ = np.vstack((u1,u2))
-        param_ = param_/np.sqrt(param_[5])
+        # param_ = param_/param_[-1]
         print index_of_max_eig_v
         if param_[0]<0 and param_[1]<0 and param_[2]<0:
             param_ *= -1
@@ -214,16 +215,27 @@ class ImuMagCalibration(object):
         ry = np.sqrt(1/abs(param_[1,0]))
         rz = np.sqrt(1/abs(param_[2,0]))
         center = -0.5*np.linalg.inv(A_mat)*np.matrix([[2*param_array[6]], [2*param_array[7]], [2*param_array[8]]])
-        print "the center is:", center
+        print "the center is:", center.T
         print "xAxis_r: %f, yAxis_r: %f, zAxis_r: %f" % (rx, ry, rz)
         print "magnitude: %f" % param_array[-1]
         e_v, e_vec = np.linalg.eig(A_mat)
         print "the A matrix \n", A_mat
         print "A eig values \n", e_v
         print "A eig vectors \n", e_vec
-        # print e_vec*np.diag(e_v) - A_mat*e_vec
-        # print np.linalg.inv(e_vec)*A_mat*e_vec
-        transformation_mat = np.sqrt(np.diag(e_v)) * e_vec
+        print "proof of transformation \n", e_vec*np.diag(e_v) - A_mat*e_vec
+        # print "proof of transformation", np.linalg.inv(e_vec)*A_mat*e_vec
+
+        transformation_mat = e_vec*(np.sqrt(np.diag(e_v)) * e_vec.T)  # Best, note however that the proof for this is missig
+        # transformation_mat = np.sqrt(np.diag(e_v)) * e_vec.T#np.linalg.inv(e_vec)
+        e_vec = np.linalg.inv(e_vec)
+        print "scaling \n", np.sqrt(np.diag(e_v))
+        print "rotation \n", e_vec
+        r,p,y = tf.transformations.euler_from_matrix(np.linalg.inv(e_vec))
+        print "euler angels", r * 180.0/np.pi, p * 180.0/np.pi, y * 180.0/np.pi
+        print "rank of eigen vectors: ", np.linalg.matrix_rank(e_vec)
+
+        print "test\n",
+
         print "transformation mat"
         print transformation_mat
 
@@ -232,10 +244,13 @@ class ImuMagCalibration(object):
 
 
         print "END OF PAPER"
-        self.calib_values["elipsoid_transformation"] = transformation_mat.tolist()
-        self.calib_values["elipsoid_center"] = center.T[0].tolist()
+        transformation_to_list = transformation_mat.reshape(1,9).tolist()[0]
+        print "transformation to list", transformation_to_list
+        self.calib_values["elipsoid_transformation"] = transformation_mat.reshape(1,9).tolist()[0]
+        self.calib_values["elipsoid_center"] = center.T.tolist()[0]
         print self.calib_values["elipsoid_transformation"]
         print self.calib_values["elipsoid_center"]
+        print(len(self.calib_values["elipsoid_center"]))
 
 
 

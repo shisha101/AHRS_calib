@@ -62,7 +62,7 @@ class ImuDataCapture(object):
 
 class PlotImuData(object):
 
-    def __init__(self, dict_of_values, absolute_time=False, bias_simple=None, sensitivity=None, bias_w_sensitivity=None):
+    def __init__(self, dict_of_values, absolute_time=False, bias_simple=None, sensitivity=None, bias_w_sensitivity=None, elipsoid_mat=None, elipsoid_offset=None):
         self.data = dict_of_values
         # self.data = ImuDataCapture("a", "b")
         if not absolute_time:
@@ -91,6 +91,13 @@ class PlotImuData(object):
             self.sens_cor_val = None
             self.sens_cor_magnitude = None
 
+        if elipsoid_mat is not None and elipsoid_offset is not None:
+            # do correction
+            self.ellipsoid_cor_val, self.ellipsoid_cor_magnitude = self.calculate_elipsoid_transformed_values(elipsoid_mat, elipsoid_offset)
+        else:
+            self.ellipsoid_cor_val = None
+            self.ellipsoid_cor_magnitude = None
+
     def calc_min_max(self, data_dict_entry):
         min_max_dict = {"min_x": min(self.data[data_dict_entry][0]), "max_x": max(self.data[data_dict_entry][0]),
                         "min_y": min(self.data[data_dict_entry][1]), "max_y": max(self.data[data_dict_entry][1]),
@@ -111,6 +118,29 @@ class PlotImuData(object):
         corrected_values = np.asarray(corrected_values).T
 
         return corrected_values, magnitude
+
+    def calculate_elipsoid_transformed_values(self, t_mat, offset):
+        measurement_matrix = np.matrix(self.data["mag"])  # create 3xn mat
+        t_mat = np.matrix([t_mat[0:3],t_mat[3:6],t_mat[6:9]])
+        # print "t_mat", t_mat
+        np_offset_vec = np.array(offset).reshape(3,1)
+        # print np_offset_vec
+        offset_mat = measurement_matrix - np_offset_vec
+        transformed_vals = t_mat * offset_mat
+        magnitude = np.sqrt(np.multiply(transformed_vals, transformed_vals).sum(axis=0))
+
+        # print type(transformed_vals)
+        # print transformed_vals.shape
+        # print "before sub \n", measurement_matrix[:, 0:5]
+        # print "after sub \n", offset_mat[:, 0:5]
+        # print offset_mat.shape
+        # print t_mat.shape
+        # print type(offset_mat)
+        # print type(t_mat)
+        # print type(magnitude)
+        # print magnitude.shape
+        # print np.average(magnitude)
+        return transformed_vals, magnitude.T.tolist()
 
 
     def plot_imu(self, time_list, values_list, axis_names_list):
@@ -156,15 +186,21 @@ class PlotImuData(object):
     def plot_mag_circles_all(self):
         axis_names = ["normal to X", "normal to Y", "normal to Z", "magnitude_mag_all_axis"]
         if self.check_data_availability("mag"):
-            self.plot_mag_circles(self.data["mag"], self.data["mag_magnitude"], axis_names, mag_normalizer=max(self.data["mag_magnitude"]))
+            self.plot_mag_circles(self.data["mag"], self.data["mag_magnitude"], axis_names, mag_normalizer=max(self.data["mag_magnitude"]), fig_name="raw data")
         if self.bias_cor_val is not None:
-            self.plot_mag_circles(self.bias_cor_val, self.bias_cor_magnitude, axis_names, mag_normalizer=max(self.bias_cor_magnitude))
+            self.plot_mag_circles(self.bias_cor_val, self.bias_cor_magnitude, axis_names, mag_normalizer=max(self.bias_cor_magnitude), fig_name="bias correction")
         if self.sens_cor_val is not None:
-            self.plot_mag_circles(self.sens_cor_val, self.sens_cor_magnitude, axis_names, mag_normalizer=max(self.sens_cor_magnitude))
-            # print self.bias_cor_magnitude
+            # print self.sens_cor_val.shape
+            # print len(self.sens_cor_magnitude)
+            self.plot_mag_circles(self.sens_cor_val, self.sens_cor_magnitude, axis_names, mag_normalizer=max(self.sens_cor_magnitude), fig_name="scaling and position correction")
+        if self.ellipsoid_cor_val is not None:
+            pass
+            # print self.ellipsoid_cor_val.shape
+            # print len(self.ellipsoid_cor_magnitude)
+            # self.plot_mag_circles(self.ellipsoid_cor_val, self.ellipsoid_cor_magnitude, axis_names, fig_name="elipsoid_correction")
 
-    def plot_mag_circles(self, data_entry_matrix, data_magnitude_vector, axis_names, mag_normalizer=1.0):
-        fig = plt.figure()
+    def plot_mag_circles(self, data_entry_matrix, data_magnitude_vector, axis_names, mag_normalizer=1.0, fig_name=None):
+        fig = plt.figure(fig_name)
         avg_mag = np.average(data_magnitude_vector)
         plot_1 = fig.add_subplot(411)
         self.draw_mag_2d_circle(plot_1, data_entry_matrix[1], data_entry_matrix[2], avg_mag)
@@ -231,13 +267,16 @@ class PlotImuData(object):
 
         # TODO: fix normalization which is assumes all vectors start from the origin
         if self.check_data_availability("mag"):
-            self.plot_mag_vs_sphere(self.data["mag"], magnitude=self.data["mag_magnitude"], plot_sphere=plot_sphere, down_sampling_step=down_sampling_step)
+            self.plot_mag_vs_sphere(self.data["mag"], magnitude=self.data["mag_magnitude"], plot_sphere=plot_sphere, down_sampling_step=down_sampling_step, fig_name="raw data_s")
         if self.bias_cor_val is not None:
             # pass
-            self.plot_mag_vs_sphere(self.bias_cor_val, magnitude=self.bias_cor_magnitude, plot_sphere=plot_sphere, down_sampling_step=down_sampling_step)
+            self.plot_mag_vs_sphere(self.bias_cor_val, magnitude=self.bias_cor_magnitude, plot_sphere=plot_sphere, down_sampling_step=down_sampling_step, fig_name="bias correction_s")
         if self.sens_cor_val is not None:
             # pass
-            self.plot_mag_vs_sphere(self.sens_cor_val, magnitude=1.0, plot_sphere=plot_sphere, down_sampling_step=down_sampling_step)
+            self.plot_mag_vs_sphere(self.sens_cor_val, magnitude=1.0, plot_sphere=plot_sphere, down_sampling_step=down_sampling_step, fig_name="scaling and position correction_s")
+        if self.ellipsoid_cor_val is not None:
+            # pass
+            self.plot_mag_vs_sphere(self.ellipsoid_cor_val, magnitude=self.ellipsoid_cor_magnitude, plot_sphere=plot_sphere, down_sampling_step=down_sampling_step, fig_name="ellipsoid_correction_s")
             # fig = plt.figure()
             # ax = fig.add_subplot(111, projection='3d')
             #
@@ -279,11 +318,12 @@ class PlotImuData(object):
             # ax.set_zlim3d(-axis_range_all, axis_range_all)
             # fig.show()
 
-    def plot_mag_vs_sphere(self, inputs, magnitude=1.0, plot_sphere=True, down_sampling_step=10):
+    def plot_mag_vs_sphere(self, inputs, magnitude=1.0, plot_sphere=True, down_sampling_step=10, fig_name=None):
         avg_mag = np.average(magnitude)
+        # print "magnitude avg is", avg_mag
         radius = avg_mag
         # print radius
-        fig = plt.figure()
+        fig = plt.figure(fig_name)
         ax = fig.add_subplot(111, projection='3d')
 
         # normalize vectors
