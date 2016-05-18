@@ -43,7 +43,7 @@ if __name__ == '__main__':
         imu_mag_calib_obj = ImuMagCalibration(dic_from_drive)
         imu_mag_calib_obj.calculate_calib_parameters_hard_iron()
         imu_mag_calib_obj.calculate_calib_parameters_x_sqr()
-        imu_mag_calib_obj.calculate_calib_parameters_pos_scale()
+        imu_mag_calib_obj.calculate_calib_ellipsoid_parameters()
         imu_mag_calib_obj.dump_to_file(imu_name)
     else:
         print "No the given file has not been found"
