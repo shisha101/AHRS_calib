@@ -190,14 +190,9 @@ class PlotImuData(object):
         if self.bias_cor_val is not None:
             self.plot_mag_circles(self.bias_cor_val, self.bias_cor_magnitude, axis_names, mag_normalizer=max(self.bias_cor_magnitude), fig_name="bias correction")
         if self.sens_cor_val is not None:
-            # print self.sens_cor_val.shape
-            # print len(self.sens_cor_magnitude)
             self.plot_mag_circles(self.sens_cor_val, self.sens_cor_magnitude, axis_names, mag_normalizer=max(self.sens_cor_magnitude), fig_name="scaling and position correction")
         if self.ellipsoid_cor_val is not None:
-            pass
-            # print self.ellipsoid_cor_val.shape
-            # print len(self.ellipsoid_cor_magnitude)
-            # self.plot_mag_circles(self.ellipsoid_cor_val, self.ellipsoid_cor_magnitude, axis_names, fig_name="elipsoid_correction")
+            self.plot_mag_circles(np.asarray(self.ellipsoid_cor_val), self.ellipsoid_cor_magnitude, axis_names, fig_name="elipsoid_correction")
 
     def plot_mag_circles(self, data_entry_matrix, data_magnitude_vector, axis_names, mag_normalizer=1.0, fig_name=None):
         fig = plt.figure(fig_name)

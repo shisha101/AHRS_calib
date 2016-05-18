@@ -109,7 +109,7 @@ class ImuMagCalibration(object):
         # print "new method"
         s11 = D_tD[0:6, 0:6]
         s12 = D_tD[0:6, 6:10]
-        s22 = D_tD[6:10,6:10]
+        s22 = D_tD[6:10, 6:10]
         if np.linalg.cond(s22) > 10000:
             inv_s22 = np.linalg.pinv(s22)
             print "using puesodo inverse"
@@ -123,8 +123,8 @@ class ImuMagCalibration(object):
         index_of_max_eig_v = np.argmax(eig_v)
         u1 = eig_vec[:, index_of_max_eig_v]
         u2 = -v2 * u1
-        param_ = np.vstack((u1,u2))
-        # param_ = param_/param_[-1]  # scaling
+        param_ = np.vstack((u1, u2))
+        param_ = param_/param_[-1]  # scaling
         print index_of_max_eig_v
         if param_[0] < 0 and param_[1] < 0 and param_[2] < 0:
             param_ *= -1
