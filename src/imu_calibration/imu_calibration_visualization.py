@@ -113,7 +113,12 @@ class PlotImuData(object):
         corrected_values = np.multiply(bias_corrected_measurements, sens_array)
         magnitude_sq = np.multiply(corrected_values, corrected_values).sum(axis=1)
         magnitude = np.sqrt(magnitude_sq)  # magnitude of mag readings after correction
-
+        avg_mag = np.average(magnitude)
+        corrected_values[:,0] = corrected_values[:,0] / avg_mag
+        corrected_values[:,1] = corrected_values[:,1] / avg_mag
+        corrected_values[:,2] = corrected_values[:,2] / avg_mag
+        magnitude_sq = np.multiply(corrected_values, corrected_values).sum(axis=1)
+        magnitude = np.sqrt(magnitude_sq)  # magnitude of mag readings after correction
         magnitude = magnitude.tolist()
         corrected_values = np.asarray(corrected_values).T
 
@@ -128,7 +133,11 @@ class PlotImuData(object):
         offset_mat = measurement_matrix - np_offset_vec
         transformed_vals = t_mat * offset_mat
         magnitude = np.sqrt(np.multiply(transformed_vals, transformed_vals).sum(axis=0))
-
+        avg_mag = np.average(magnitude)
+        transformed_vals[0,:] = transformed_vals[0,:]/avg_mag
+        transformed_vals[1,:] = transformed_vals[1,:]/avg_mag
+        transformed_vals[2,:] = transformed_vals[2,:]/avg_mag
+        magnitude = np.sqrt(np.multiply(transformed_vals, transformed_vals).sum(axis=0))
         # print type(transformed_vals)
         # print transformed_vals.shape
         # print "before sub \n", measurement_matrix[:, 0:5]
@@ -186,15 +195,15 @@ class PlotImuData(object):
     def plot_mag_circles_all(self):
         axis_names = ["normal to X", "normal to Y", "normal to Z", "magnitude_mag_all_axis"]
         if self.check_data_availability("mag"):
-            self.plot_mag_circles(self.data["mag"], self.data["mag_magnitude"], axis_names, mag_normalizer=max(self.data["mag_magnitude"]), fig_name="raw data")
+            self.plot_mag_circles(self.data["mag"], self.data["mag_magnitude"], axis_names, fig_name="raw data")
         if self.bias_cor_val is not None:
-            self.plot_mag_circles(self.bias_cor_val, self.bias_cor_magnitude, axis_names, mag_normalizer=max(self.bias_cor_magnitude), fig_name="bias correction")
+            self.plot_mag_circles(self.bias_cor_val, self.bias_cor_magnitude, axis_names, fig_name="bias correction")
         if self.sens_cor_val is not None:
-            self.plot_mag_circles(self.sens_cor_val, self.sens_cor_magnitude, axis_names, mag_normalizer=max(self.sens_cor_magnitude), fig_name="scaling and position correction")
+            self.plot_mag_circles(self.sens_cor_val, self.sens_cor_magnitude, axis_names, fig_name="scaling and position correction")
         if self.ellipsoid_cor_val is not None:
             self.plot_mag_circles(np.asarray(self.ellipsoid_cor_val), self.ellipsoid_cor_magnitude, axis_names, fig_name="elipsoid_correction")
 
-    def plot_mag_circles(self, data_entry_matrix, data_magnitude_vector, axis_names, mag_normalizer=1.0, fig_name=None):
+    def plot_mag_circles(self, data_entry_matrix, data_magnitude_vector, axis_names, fig_name=None):
         fig = plt.figure(fig_name)
         avg_mag = np.average(data_magnitude_vector)
         plot_1 = fig.add_subplot(411)
@@ -207,7 +216,12 @@ class PlotImuData(object):
         self.draw_mag_2d_circle(plot_3, data_entry_matrix[0], data_entry_matrix[1], avg_mag)
 
         plot_4 = fig.add_subplot(414)
-        plot_4.plot(self.data["time_mag"], np.array(data_magnitude_vector)/mag_normalizer)
+        plot_4.plot(self.data["time_mag"], np.array(data_magnitude_vector)/np.average(data_magnitude_vector))
+        error = np.array(data_magnitude_vector) - np.average(data_magnitude_vector)
+        rms = np.sqrt(np.multiply(error, error).sum(axis=0))
+        textstr = "RMS: " + str(rms)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        plot_4.text(0.05, 0.95, textstr, fontsize=14, verticalalignment='top', bbox=props)
         # axes operations
         plot_1.set_xlabel(axis_names[0])
         plot_1.axis("equal")
