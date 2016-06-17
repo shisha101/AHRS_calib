@@ -3,6 +3,7 @@ import numpy as np
 import rospy
 from sensor_msgs.msg import Imu, MagneticField
 from tf import transformations
+import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from itertools import islice
@@ -193,7 +194,7 @@ class PlotImuData(object):
             self.plot_imu(self.data["time_mag"], self.data["mag"], axis_names)
 
     def plot_mag_circles_all(self):
-        axis_names = ["normal to X", "normal to Y", "normal to Z", "magnitude_mag_all_axis"]
+        axis_names = ["projection normal to X", "projection normal to Y", "projection normal to Z", "vector magnitude"]
         if self.check_data_availability("mag"):
             self.plot_mag_circles(self.data["mag"], self.data["mag_magnitude"], axis_names, fig_name="raw data")
         if self.bias_cor_val is not None:
@@ -204,34 +205,39 @@ class PlotImuData(object):
             self.plot_mag_circles(np.asarray(self.ellipsoid_cor_val), self.ellipsoid_cor_magnitude, axis_names, fig_name="elipsoid_correction")
 
     def plot_mag_circles(self, data_entry_matrix, data_magnitude_vector, axis_names, fig_name=None):
+        self.font_size = 24
+        matplotlib.rcParams.update({'font.size': self.font_size})
         fig = plt.figure(fig_name)
         avg_mag = np.average(data_magnitude_vector)
-        plot_1 = fig.add_subplot(411)
+        plot_1 = fig.add_subplot(222)
         self.draw_mag_2d_circle(plot_1, data_entry_matrix[1], data_entry_matrix[2], avg_mag)
 
-        plot_2 = fig.add_subplot(412)
+        plot_2 = fig.add_subplot(223, sharey=plot_1, sharex=plot_1)
         self.draw_mag_2d_circle(plot_2, data_entry_matrix[0], data_entry_matrix[2], avg_mag)
 
-        plot_3 = fig.add_subplot(413)
+        plot_3 = fig.add_subplot(224, sharey=plot_1, sharex=plot_1)
         self.draw_mag_2d_circle(plot_3, data_entry_matrix[0], data_entry_matrix[1], avg_mag)
 
-        plot_4 = fig.add_subplot(414)
+        plot_4 = fig.add_subplot(221)
         plot_4.plot(self.data["time_mag"], np.array(data_magnitude_vector)/np.average(data_magnitude_vector))
         error = np.array(data_magnitude_vector) - np.average(data_magnitude_vector)
         rms = np.sqrt(np.multiply(error, error).sum(axis=0))
         textstr = "RMS: " + str(rms)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        plot_4.text(0.05, 0.95, textstr, fontsize=14, verticalalignment='top', bbox=props)
+        fs_multiplier = 2.5
+        fig.text(0.06, 0.95, textstr, fontsize=14*fs_multiplier, verticalalignment='top', bbox=props)
         # axes operations
-        plot_1.set_xlabel(axis_names[0])
+        plot_1.set_xlabel(axis_names[0], fontsize=14*fs_multiplier)
         plot_1.axis("equal")
-        plot_2.set_xlabel(axis_names[1])
+        plot_2.set_xlabel(axis_names[1], fontsize=14*fs_multiplier)
         plot_2.axis("equal")
-        plot_3.set_xlabel(axis_names[2])
+        plot_3.set_xlabel(axis_names[2], fontsize=14*fs_multiplier)
         plot_3.axis("equal")
-        plot_4.set_xlabel(axis_names[3])
+        plot_4.set_ylabel(axis_names[3], fontsize=14*fs_multiplier)
+        plot_4.set_xlabel("time [s]", fontsize=14*fs_multiplier)
 
-        fig.tight_layout()
+        #fig.tight_layout()
+        fig.subplots_adjust(left=0.05, right=0.98, wspace=0.10, hspace=0.19, bottom=0.08, top=0.98)
         fig.show()
 
 
@@ -329,6 +335,8 @@ class PlotImuData(object):
 
     def plot_mag_vs_sphere(self, inputs, magnitude=1.0, plot_sphere=True, down_sampling_step=10, fig_name=None):
         avg_mag = np.average(magnitude)
+        # self.font_size = 14
+        # matplotlib.rcParams.update({'font.size': self.font_size})
         # print "magnitude avg is", avg_mag
         radius = avg_mag
         # print radius
@@ -362,9 +370,9 @@ class PlotImuData(object):
                   max(norm_coordinates[1])-min(norm_coordinates[1]),
                   max(norm_coordinates[2])-min(norm_coordinates[2])]
 
-        textstr = "range x: " + str(ranges[0]) + "\n range y: " + str(ranges[1]) + " \n range z: " + str(ranges[2])
+        textstr = "range x: %.4f\nrange y: %.4f\nrange z: %.4f" % (ranges[0], ranges[1], ranges[2])
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        fig.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
+        fig.text(0.15, 0.88, textstr, transform=ax.transAxes, fontsize=24, verticalalignment='top', bbox=props)
         axis_range_all = 1.1 * avg_mag
         # axis_range = [-axis_range_all, axis_range_all, -axis_range_all, axis_range_all, -axis_range_all, axis_range_all]
         # axes = Axes3D(fig)
